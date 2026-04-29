@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Skin System</title>
+    <script src="https://bsunanda.github.io/skinview3d/bundles/skinview3d.bundle.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; }
+        #preview { width: 300px; height: 400px; margin: 20px auto; background: #333; border-radius: 10px; }
+        input { padding: 10px; border-radius: 5px; border: none; width: 250px; }
+        button { padding: 10px 20px; background: #5c7cfa; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Minecraft Skin System</h1>
+    
+    <div>
+        <input type="text" id="username" placeholder="Enter Minecraft Username">
+        <button onclick="updateSkin()">View Skin</button>
+    </div>
+
+    <div id="preview"></div>
+
+    <div style="margin-top: 30px; padding: 20px; border: 1px solid #444;">
+        <h3>Upload Custom Skin</h3>
+        <input type="file" id="skinFile" accept=".png">
+        <button onclick="uploadSkin()">Upload to My Server</button>
+    </div>
+
+    <script>
+        // Setup the 3D Viewer
+        const viewer = new skinview3d.SkinViewer({
+            canvas: document.createElement("canvas"),
+            width: 300,
+            height: 400,
+            skin: "https://textures.minecraft.net/texture/1a4af718455edc43147ba26ec979f048cfc06d15799981e14934bc7e46"
+        });
+        document.getElementById("preview").appendChild(viewer.canvas);
+
+        async function updateSkin() {
+            const user = document.getElementById("username").value;
+            // This calls the "Brain" API we made in Phase 1
+            const response = await fetch(`/.netlify/functions/get-skin/${user}`);
+            const data = await response.json();
+            viewer.loadSkin(data.skins.default);
+        }
+
+        async function uploadSkin() {
+            alert("Upload logic coming in Phase 2.5! We need to set up the database first.");
+        }
+    </script>
+</body>
+</html>
