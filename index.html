@@ -1,52 +1,264 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="dark">
 <head>
-    <title>My Skin System</title>
-    <script src="https://bsunanda.github.io/skinview3d/bundles/skinview3d.bundle.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; }
-        #preview { width: 300px; height: 400px; margin: 20px auto; background: #333; border-radius: 10px; }
-        input { padding: 10px; border-radius: 5px; border: none; width: 250px; }
-        button { padding: 10px 20px; background: #5c7cfa; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minecraft Skin System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['"JetBrains Mono"', "ui-monospace", "monospace"],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    body { font-family: "Inter", system-ui, sans-serif; }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+  </style>
 </head>
-<body>
-    <h1>Minecraft Skin System</h1>
-    
-    <div>
-        <input type="text" id="username" placeholder="Enter Minecraft Username">
-        <button onclick="updateSkin()">View Skin</button>
-    </div>
+<body class="min-h-screen bg-slate-950 text-slate-100 grid-bg">
+  <div class="mx-auto max-w-5xl px-6 py-10">
+    <header class="flex items-center justify-between border-b border-slate-800 pb-6">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-100">
+          Minecraft Skin System
+        </h1>
+        <p class="text-sm text-slate-400 font-mono mt-1">
+          /.netlify/functions/get-skin
+        </p>
+      </div>
+      <span
+        id="status-badge"
+        class="rounded-full bg-slate-800 px-3 py-1 text-xs font-mono text-slate-300"
+      >idle</span>
+    </header>
 
-    <div id="preview"></div>
+    <section class="mt-8 grid gap-6 lg:grid-cols-[1fr_2fr]">
+      <div class="space-y-6">
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-xl">
+          <label class="block text-xs font-mono uppercase tracking-wide text-slate-400">
+            Search by username
+          </label>
+          <form id="search-form" class="mt-2 flex gap-2">
+            <input
+              id="username"
+              type="text"
+              autocomplete="off"
+              placeholder="Notch"
+              class="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-700"
+            />
+            <button
+              type="submit"
+              class="rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-white"
+            >
+              Load
+            </button>
+          </form>
+          <p id="search-msg" class="mt-2 text-xs font-mono text-slate-500"></p>
+        </div>
 
-    <div style="margin-top: 30px; padding: 20px; border: 1px solid #444;">
-        <h3>Upload Custom Skin</h3>
-        <input type="file" id="skinFile" accept=".png">
-        <button onclick="uploadSkin()">Upload to My Server</button>
-    </div>
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-xl">
+          <h2 class="text-sm font-semibold text-slate-200">Upload custom skin</h2>
+          <p class="mt-1 text-xs text-slate-400">
+            Stored in Netlify Blobs, keyed by username.
+          </p>
+          <form id="upload-form" class="mt-3 space-y-3">
+            <input
+              id="upload-username"
+              type="text"
+              placeholder="Username for this skin"
+              class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-700"
+            />
+            <input
+              id="skin-file"
+              type="file"
+              accept="image/png,.png"
+              class="block w-full text-xs text-slate-400 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-800 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-slate-200 hover:file:bg-slate-700"
+            />
+            <button
+              type="submit"
+              class="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-700"
+            >
+              Upload to Netlify Blobs
+            </button>
+          </form>
+          <p id="upload-msg" class="mt-2 text-xs font-mono text-slate-500"></p>
+        </div>
 
-    <script>
-        // Setup the 3D Viewer
-        const viewer = new skinview3d.SkinViewer({
-            canvas: document.createElement("canvas"),
-            width: 300,
-            height: 400,
-            skin: "https://textures.minecraft.net/texture/1a4af718455edc43147ba26ec979f048cfc06d15799981e14934bc7e46"
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-xl">
+          <h2 class="text-sm font-semibold text-slate-200">Current</h2>
+          <dl class="mt-3 space-y-2 text-xs font-mono text-slate-400">
+            <div class="flex justify-between gap-4">
+              <dt>username</dt>
+              <dd id="meta-username" class="truncate text-slate-200">—</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt>source</dt>
+              <dd id="meta-source" class="truncate text-slate-200">—</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt>texture</dt>
+              <dd id="meta-url" class="truncate text-slate-200 max-w-[14ch]">—</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div
+        class="relative flex items-center justify-center rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-950 to-black p-6 shadow-2xl min-h-[520px]"
+      >
+        <div
+          id="viewer-mount"
+          class="rounded-xl border border-slate-800 bg-slate-950/40 overflow-hidden"
+        ></div>
+        <div
+          id="viewer-loading"
+          class="absolute inset-0 hidden items-center justify-center bg-slate-950/70 text-sm font-mono text-slate-300"
+        >
+          loading skin…
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-10 text-center text-xs font-mono text-slate-500">
+      Powered by skinview3d · Mojang API · Netlify Functions + Blobs
+    </footer>
+  </div>
+
+  <script type="module">
+    import * as skinview3d from "https://esm.sh/skinview3d@3.4.1";
+
+    const STEVE =
+      "https://textures.minecraft.net/texture/1a4af718455edc43147ba26ec979f048cfc06d15799981e14934bc7e46";
+
+    const viewer = new skinview3d.SkinViewer({
+      width: 360,
+      height: 480,
+      skin: STEVE,
+    });
+    viewer.fov = 45;
+    viewer.zoom = 0.85;
+    if (viewer.controls) viewer.controls.enableZoom = true;
+
+    try {
+      viewer.animation = new skinview3d.WalkingAnimation();
+      viewer.animation.speed = 0.6;
+    } catch {}
+
+    document.getElementById("viewer-mount").appendChild(viewer.canvas);
+
+    const statusBadge = document.getElementById("status-badge");
+    const viewerLoading = document.getElementById("viewer-loading");
+    const setStatus = (text, tone = "slate") => {
+      statusBadge.textContent = text;
+      const tones = {
+        slate: "bg-slate-800 text-slate-300",
+        ok: "bg-emerald-900/60 text-emerald-300",
+        err: "bg-rose-900/60 text-rose-300",
+        busy: "bg-sky-900/60 text-sky-300",
+      };
+      statusBadge.className =
+        "rounded-full px-3 py-1 text-xs font-mono " + tones[tone];
+    };
+
+    const setMeta = ({ username, source, url }) => {
+      document.getElementById("meta-username").textContent = username || "—";
+      document.getElementById("meta-source").textContent = source || "—";
+      const urlEl = document.getElementById("meta-url");
+      urlEl.textContent = url ? url.split("/").pop() : "—";
+      urlEl.title = url || "";
+    };
+
+    async function loadSkin(username) {
+      const u = (username || "").trim();
+      if (!u) return;
+      setStatus("fetching", "busy");
+      viewerLoading.classList.remove("hidden");
+      viewerLoading.classList.add("flex");
+      const msg = document.getElementById("search-msg");
+      msg.textContent = "";
+
+      try {
+        const res = await fetch(
+          `/.netlify/functions/get-skin?username=${encodeURIComponent(u)}`,
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const skinUrl = data?.skins?.default;
+        if (!skinUrl) throw new Error("no skin url");
+        await viewer.loadSkin(skinUrl);
+        setMeta({ username: data.username, source: data.source, url: skinUrl });
+        setStatus(data.source === "fallback" ? "fallback" : "loaded", "ok");
+        msg.textContent = `loaded ${data.username} (${data.source})`;
+      } catch (err) {
+        setStatus("error", "err");
+        msg.textContent = `error: ${err.message}`;
+      } finally {
+        viewerLoading.classList.add("hidden");
+        viewerLoading.classList.remove("flex");
+      }
+    }
+
+    document.getElementById("search-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      loadSkin(document.getElementById("username").value);
+    });
+
+    document.getElementById("upload-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("upload-username").value.trim();
+      const file = document.getElementById("skin-file").files[0];
+      const msg = document.getElementById("upload-msg");
+      msg.textContent = "";
+
+      if (!username) {
+        msg.textContent = "enter a username";
+        return;
+      }
+      if (!file) {
+        msg.textContent = "choose a .png file";
+        return;
+      }
+
+      const form = new FormData();
+      form.append("username", username);
+      form.append("skin", file);
+
+      setStatus("uploading", "busy");
+      try {
+        const res = await fetch("/.netlify/functions/upload-skin", {
+          method: "POST",
+          body: form,
         });
-        document.getElementById("preview").appendChild(viewer.canvas);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+        msg.textContent = `saved as ${data.username}`;
+        setStatus("uploaded", "ok");
+        document.getElementById("username").value = data.username;
+        loadSkin(data.username);
+      } catch (err) {
+        setStatus("error", "err");
+        msg.textContent = `error: ${err.message}`;
+      }
+    });
 
-        async function updateSkin() {
-            const user = document.getElementById("username").value;
-            // This calls the "Brain" API we made in Phase 1
-            const response = await fetch(`/.netlify/functions/get-skin/${user}`);
-            const data = await response.json();
-            viewer.loadSkin(data.skins.default);
-        }
-
-        async function uploadSkin() {
-            alert("Upload logic coming in Phase 2.5! We need to set up the database first.");
-        }
-    </script>
+    setMeta({ username: "steve", source: "default", url: STEVE });
+  </script>
 </body>
 </html>
