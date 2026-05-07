@@ -5,11 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skin Proxy API</title>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 50px; }
-        .container { max-width: 600px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 10px; }
-        code { background: #000; padding: 5px; color: #00ff00; }
-        input { padding: 10px; border-radius: 5px; border: none; width: 60%; }
-        button { padding: 10px 20px; border-radius: 5px; border: none; background: #5865F2; color: white; cursor: pointer; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #121212; 
+            color: white; 
+            text-align: center; 
+            padding: 50px; 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container { 
+            max-width: 600px; 
+            width: 90%;
+            margin: auto; 
+            background: #1e1e1e; 
+            padding: 40px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+        h1 { margin-top: 0; color: #fff; }
+        hr { border: 0; border-top: 1px solid #333; margin: 25px 0; }
+        code { 
+            background: #000; 
+            padding: 8px 12px; 
+            color: #00ff00; 
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        input { 
+            padding: 12px; 
+            border-radius: 5px; 
+            border: 1px solid #333; 
+            width: 60%; 
+            background: #2a2a2a;
+            color: white;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #5865F2;
+        }
+        button { 
+            padding: 12px 24px; 
+            border-radius: 5px; 
+            border: none; 
+            background: #5865F2; 
+            color: white; 
+            cursor: pointer; 
+            font-weight: bold;
+            margin-left: 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #4752c4;
+        }
+        h3 { color: #bbb; margin-bottom: 20px; }
+        p { color: #888; line-height: 1.6; }
+        b { color: #ddd; }
     </style>
 </head>
 <body>
@@ -18,16 +76,30 @@
         <p>This API fetches skins from <b>Ely.by</b>, <b>Mojang</b>, and <b>TLauncher</b>.</p>
         <hr>
         <h3>Test the API</h3>
-        <input type="text" id="username" placeholder="Enter Minecraft Username">
-        <button onclick="test()">View JSON</button>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+            <input type="text" id="username" placeholder="Enter Minecraft Username">
+            <button onclick="test()">View JSON</button>
+        </div>
         <p>API Root: <code>/api/v1/user/{username}.json</code></p>
     </div>
 
     <script>
         function test() {
-            const user = document.getElementById('username').value;
-            if (user) window.location.href = `/api/v1/user/${user}.json`;
+            const user = document.getElementById('username').value.trim();
+            if (user) {
+                // Navigates to the API endpoint
+                window.location.href = `/api/v1/user/${user}.json`;
+            } else {
+                alert("Please enter a username.");
+            }
         }
+
+        // Allow pressing Enter to trigger the test
+        document.getElementById('username').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                test();
+            }
+        });
     </script>
 </body>
 </html>
