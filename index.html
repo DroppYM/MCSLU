@@ -3,31 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Skin Proxy API</title>
+    <title>Universal Skin Fallback API</title>
+    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.0/dist/skinview3d.bundle.js"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; text-align: center; padding: 50px; }
-        .container { max-width: 600px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 10px; }
-        code { background: #000; padding: 5px; color: #00ff00; }
-        input { padding: 10px; border-radius: 5px; border: none; width: 60%; }
-        button { padding: 10px 20px; border-radius: 5px; border: none; background: #5865F2; color: white; cursor: pointer; }
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --accent-blue: #3498db;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Replace with your snowy background image */
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Container */
+        .main-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 40px;
+            width: 900px;
+            display: flex;
+            gap: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Left Column Styles */
+        .left-col { flex: 1; }
+        
+        h1 { margin: 0 0 5px 0; font-size: 1.8rem; color: #333; }
+        .subtitle { color: #555; margin-bottom: 25px; font-size: 0.9rem; }
+
+        .section-box {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Status List */
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            font-size: 0.9rem;
+        }
+        .online-dot { color: #27ae60; font-weight: bold; }
+        .online-dot::before { content: "● "; }
+
+        /* Right Column (3D Viewer) */
+        .viewer-container {
+            width: 400px;
+            height: 450px;
+            background: #0d1117;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #222;
+        }
+
+        #skin-container { width: 100%; height: 100%; }
+
+        .viewer-controls {
+            position: absolute;
+            bottom: 15px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            color: white;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Skin Proxy Service</h1>
-        <p>This API fetches skins from <b>Ely.by</b>, <b>Mojang</b>, and <b>TLauncher</b>.</p>
-        <hr>
-        <h3>Test the API</h3>
-        <input type="text" id="username" placeholder="Enter Minecraft Username">
-        <button onclick="test()">View JSON</button>
-        <p>API Root: <code>/api/v1/user/{username}.json</code></p>
+
+<div class="main-container">
+    <div class="left-col">
+        <h1>UNIVERSAL SKIN FALLBACK API</h1>
+        <p class="subtitle">Providing skins via Ely.by → Mojang → TLauncher.</p>
+
+        <div class="section-box">
+            <label>Test Your Username</label>
+            <input type="text" id="username" placeholder="Minecraft Username (e.g., Dinnerbone)">
+            <button class="btn">View JSON API</button>
+            <p style="font-size: 0.75rem; margin-top: 10px; color: #444;">API Endpoint: <b>/api/v1/user/{username}.json</b></p>
+        </div>
+
+        <div class="section-box">
+            <label>API Status & Fallback Order</label>
+            <div class="status-item"><span>1. Ely.by <span style="color:green">(Active)</span></span> <span class="online-dot">Online</span></div>
+            <div class="status-item"><span>2. Mojang <span style="color:green">(Active)</span></span> <span class="online-dot">Online</span></div>
+            <div class="status-item"><span>3. TLauncher <span style="color:green">(Active)</span></span> <span class="online-dot">Online</span></div>
+        </div>
+
+        <div class="section-box" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <label>Quick CSL Setup</label>
+                <code>copy csl -> /api/v1/user/{username}.json</code>
+            </div>
+            <button style="background:none; border:none; cursor:pointer;">📋 Copy</button>
+        </div>
     </div>
 
-    <script>
-        function test() {
-            const user = document.getElementById('username').value;
-            if (user) window.location.href = `/api/v1/user/${user}.json`;
-        }
-    </script>
+    <div class="viewer-container">
+        <canvas id="skin-container"></canvas>
+        <div class="viewer-controls">
+            <span>Rotate ↺</span>
+            <span>Zoom 🔍</span>
+            <span>Animation (Walk/Idle) ▶</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Initialize skinview3d
+    const skinViewer = new skinview3d.SkinViewer({
+        canvas: document.getElementById("skin-container"),
+        width: 400,
+        height: 450,
+        skin: "skin.png" // Ensure skin.png is in your directory
+    });
+
+    // Basic Animation
+    skinViewer.animations.add(skinview3d.WalkingAnimation);
+    skinViewer.autoRotate = true;
+    skinViewer.autoRotateSpeed = 0.5;
+
+    // Optional: Add a snowy floor/background to the 3D canvas
+    skinViewer.background = 0x0d1117; // Dark match for the UI
+</script>
+
 </body>
 </html>
