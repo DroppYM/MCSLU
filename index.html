@@ -3,170 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal Skin Fallback API</title>
-    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.0/dist/skinview3d.bundle.js"></script>
+    <title>SkinProxy.API - Universal Skin Fallback</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --accent-blue: #3498db;
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Replace with your snowy background image */
-            background: url('background.jpg') no-repeat center center fixed;
+        body {
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1610450949065-2f2236893693?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background-position: center;
+            height: 100vh;
             overflow: hidden;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
 
-        /* Glassmorphism Container */
-        .main-container {
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 40px;
-            width: 900px;
-            display: flex;
-            gap: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        /* Left Column Styles */
-        .left-col { flex: 1; }
-        
-        h1 { margin: 0 0 5px 0; font-size: 1.8rem; color: #333; }
-        .subtitle { color: #555; margin-bottom: 25px; font-size: 0.9rem; }
-
-        .section-box {
-            background: rgba(255, 255, 255, 0.5);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
+        .inner-glass {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            margin-bottom: 10px;
+        /* Snow effect */
+        .snowflake {
+            color: #fff;
+            font-size: 1em;
+            font-family: Arial;
+            text-shadow: 0 0 1px #000;
+            position: fixed;
+            top: -10%;
+            z-index: 9999;
+            user-select: none;
+            cursor: default;
+            animation-name: snowflakes-fall, snowflakes-shake;
+            animation-duration: 10s, 3s;
+            animation-timing-function: linear, ease-in-out;
+            animation-iteration-count: infinite, infinite;
+            animation-play-state: running, running;
         }
-
-        .btn {
-            width: 100%;
-            padding: 10px;
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* Status List */
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 0;
-            font-size: 0.9rem;
-        }
-        .online-dot { color: #27ae60; font-weight: bold; }
-        .online-dot::before { content: "● "; }
-
-        /* Right Column (3D Viewer) */
-        .viewer-container {
-            width: 400px;
-            height: 450px;
-            background: #0d1117;
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid #222;
-        }
-
-        #skin-container { width: 100%; height: 100%; }
-
-        .viewer-controls {
-            position: absolute;
-            bottom: 15px;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            color: white;
-            font-size: 0.8rem;
-        }
+        @keyframes snowflakes-fall { 0% { top: -10% } 100% { top: 100% } }
+        @keyframes snowflakes-shake { 0% { transform: translateX(0px) } 50% { transform: translateX(80px) } 100% { transform: translateX(0px) } }
     </style>
 </head>
-<body>
+<body class="flex flex-col items-center justify-center p-4">
 
-<div class="main-container">
-    <div class="left-col">
-        <h1>UNIVERSAL SKIN FALLBACK API</h1>
-        <p class="subtitle">Providing skins via Ely.by → Mojang → TLauncher.</p>
+    <!-- Snowflakes -->
+    <div id="snow-container"></div>
 
-        <div class="section-box">
-            <label>Test Your Username</label>
-            <input type="text" id="username" placeholder="Minecraft Username (e.g., Dinnerbone)">
-            <button class="btn">View JSON API</button>
-            <p style="font-size: 0.75rem; margin-top: 10px; color: #444;">API Endpoint: <b>/api/v1/user/{username}.json</b></p>
+    <!-- Header Logo -->
+    <div class="mb-6 flex items-center gap-3 drop-shadow-lg">
+        <div class="bg-white/20 p-2 rounded-xl border border-white/30 backdrop-blur-md">
+            <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L3 7v9c0 5 9 6 9 6s9-1 9-6V7l-9-5z" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 22V12" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 12l8.5-4.7" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 12L3.5 7.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         </div>
+        <h2 class="text-3xl font-black text-white tracking-tighter">SKINPROXY.API</h2>
+    </div>
 
-        <div class="section-box">
-            <label>API Status & Fallback Order</label>
-            <div class="status-item"><span>1. Ely.by <span style="color:green">(Active)</span></span> <span class="online-dot">Online</span></div>
-            <div class="status-item"><span>2. Mojang <span style="color:green">(Active)</span></span> <span class="online-dot">Online</span></div>
-            <div class="status-item"><span>3. TLauncher <span style="color:green">(Active)</span></span> <span class="online-dot">Online</span></div>
-        </div>
-
-        <div class="section-box" style="display:flex; justify-content:space-between; align-items:center;">
+    <!-- Main Card -->
+    <div class="glass max-w-5xl w-full rounded-3xl p-8 flex flex-col md:flex-row gap-8">
+        
+        <!-- Left Side: Controls -->
+        <div class="flex-1 space-y-6">
             <div>
-                <label>Quick CSL Setup</label>
-                <code>copy csl -> /api/v1/user/{username}.json</code>
+                <h1 class="text-3xl font-bold text-gray-900 uppercase">Universal Skin Fallback API</h1>
+                <p class="text-gray-700 font-medium opacity-80">Providing skins via Ely.by → Mojang → TLauncher.</p>
             </div>
-            <button style="background:none; border:none; cursor:pointer;">📋 Copy</button>
+
+            <!-- Input Box -->
+            <div class="inner-glass p-5 rounded-2xl space-y-4">
+                <label class="text-xs font-bold text-gray-800 uppercase tracking-widest">Test Your Username</label>
+                <div class="relative">
+                    <input id="usernameInput" type="text" placeholder="Minecraft Username (e.g., Steve)" 
+                        class="w-full bg-white/50 border border-white/30 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-400 transition-all font-medium text-gray-900">
+                </div>
+                <button onclick="fetchSkin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95">
+                    View JSON API
+                </button>
+                <p class="text-sm text-gray-800/70 font-mono text-center mt-2">
+                    API Endpoint: <span class="text-blue-900">/api/v1/user/<span id="dynamicUser">username</span>.json</span>
+                </p>
+            </div>
+
+            <!-- Status Section -->
+            <div class="inner-glass p-5 rounded-2xl">
+                <label class="text-xs font-bold text-gray-800 uppercase tracking-widest block mb-3">API Status & Fallback Order</label>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center bg-white/10 p-2 rounded-lg">
+                        <span class="text-gray-900">1. Ely.by <span class="text-green-700 font-bold">(Active)</span></span>
+                        <span class="flex items-center gap-2 text-green-700 font-bold text-xs">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> ONLINE
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center bg-white/10 p-2 rounded-lg">
+                        <span class="text-gray-900">2. Mojang <span class="text-green-700 font-bold">(Active)</span></span>
+                        <span class="flex items-center gap-2 text-green-700 font-bold text-xs">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> ONLINE
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center bg-white/10 p-2 rounded-lg">
+                        <span class="text-gray-900">3. TLauncher <span class="text-green-700 font-bold">(Active)</span></span>
+                        <span class="flex items-center gap-2 text-green-700 font-bold text-xs">
+                            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> ONLINE
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copy Code Section -->
+            <div class="inner-glass p-5 rounded-2xl flex items-center justify-between">
+                <div>
+                    <label class="text-xs font-bold text-gray-800 uppercase tracking-widest block mb-1">Quick CSL Setup</label>
+                    <code class="text-sm text-gray-900 bg-white/20 px-2 py-1 rounded">copy csl -> /api/v1/user/{username}.json</code>
+                </div>
+                <button onclick="copyToClipboard()" class="p-3 bg-white/30 hover:bg-white/50 rounded-xl transition-colors">
+                    <i class="fa-regular fa-copy text-gray-800"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Side: 3D Viewer -->
+        <div class="w-full md:w-[400px] flex flex-col">
+            <div class="relative bg-black/40 rounded-3xl border-4 border-cyan-400/50 shadow-[0_0_20px_rgba(34,211,238,0.3)] overflow-hidden flex-grow flex items-center justify-center min-h-[400px]">
+                <canvas id="skin_container" class="cursor-grab active:cursor-grabbing"></canvas>
+                
+                <!-- Overlay Controls -->
+                <div class="absolute bottom-4 left-0 right-0 flex justify-around text-white/70 text-xs font-bold uppercase tracking-tighter bg-black/20 backdrop-blur-sm py-2">
+                    <button onclick="toggleRotate()" class="hover:text-white transition-colors">Rotate <i class="fa-solid fa-arrows-rotate ml-1"></i></button>
+                    <button onclick="resetCamera()" class="hover:text-white transition-colors">Zoom <i class="fa-solid fa-magnifying-glass ml-1"></i></button>
+                    <button onclick="toggleAnimation()" class="hover:text-white transition-colors">Animation <i id="animIcon" class="fa-solid fa-play ml-1"></i></button>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingOverlay" class="absolute inset-0 bg-black/60 flex items-center justify-center hidden">
+                    <div class="text-center">
+                        <div class="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-2"></div>
+                        <p class="text-cyan-400 text-xs font-bold">FETCHING SKIN...</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="viewer-container">
-        <canvas id="skin-container"></canvas>
-        <div class="viewer-controls">
-            <span>Rotate ↺</span>
-            <span>Zoom 🔍</span>
-            <span>Animation (Walk/Idle) ▶</span>
+    <!-- Footer -->
+    <div class="mt-8 flex justify-between w-full max-w-5xl text-white/60 text-xs font-bold px-4">
+        <div class="flex gap-6">
+            <a href="#" class="hover:text-white transition-colors">GitHub Repository</a>
+            <a href="#" class="hover:text-white transition-colors">Documentation</a>
         </div>
+        <div>SnowySkin API © 2024</div>
     </div>
-</div>
 
-<script>
-    // Initialize skinview3d
-    const skinViewer = new skinview3d.SkinViewer({
-        canvas: document.getElementById("skin-container"),
-        width: 400,
-        height: 450,
-        skin: "skin.png" // Ensure skin.png is in your directory
-    });
+    <!-- Load scripts at the end of body to ensure library availability -->
+    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.0/dist/skinview3d.bundle.js"></script>
+    <script>
+        let skinViewer;
+        let walkAnimation;
 
-    // Basic Animation
-    skinViewer.animations.add(skinview3d.WalkingAnimation);
-    skinViewer.autoRotate = true;
-    skinViewer.autoRotateSpeed = 0.5;
+        function initApp() {
+            // Check if skinview3d is loaded
+            if (typeof skinview3d === 'undefined') {
+                setTimeout(initApp, 100);
+                return;
+            }
 
-    // Optional: Add a snowy floor/background to the 3D canvas
-    skinViewer.background = 0x0d1117; // Dark match for the UI
-</script>
+            // Generate Snowflakes
+            const container = document.getElementById('snow-container');
+            for(let i=0; i<30; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                flake.innerHTML = '❄';
+                flake.style.left = Math.random() * 100 + '%';
+                flake.style.animationDelay = Math.random() * 10 + 's';
+                flake.style.opacity = Math.random();
+                container.appendChild(flake);
+            }
 
+            // Initialize Skin Viewer
+            const canvas = document.getElementById("skin_container");
+            skinViewer = new skinview3d.SkinViewer({
+                canvas: canvas,
+                width: 400,
+                height: 500,
+                skin: "https://mineskin.org/assets/img/steve.png"
+            });
+
+            walkAnimation = skinViewer.animations.add(skinview3d.WalkingAnimation);
+            skinViewer.autoRotate = true;
+            skinViewer.autoRotateSpeed = 0.6;
+            
+            skinViewer.fov = 70;
+            skinViewer.zoom = 0.9;
+        }
+
+        window.onload = initApp;
+
+        function fetchSkin() {
+            const username = document.getElementById('usernameInput').value.trim() || 'Steve';
+            const overlay = document.getElementById('loadingOverlay');
+            document.getElementById('dynamicUser').innerText = username;
+            
+            overlay.classList.remove('hidden');
+
+            // Use Minotar for skin fetching
+            const skinUrl = `https://minotar.net/skin/${username}`;
+            
+            skinViewer.loadSkin(skinUrl)
+                .then(() => {
+                    overlay.classList.add('hidden');
+                })
+                .catch(() => {
+                    overlay.classList.add('hidden');
+                    console.error("Failed to fetch skin");
+                });
+        }
+
+        document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchSkin();
+        });
+
+        function toggleRotate() {
+            if(skinViewer) skinViewer.autoRotate = !skinViewer.autoRotate;
+        }
+
+        function toggleAnimation() {
+            if(!walkAnimation) return;
+            const icon = document.getElementById('animIcon');
+            if (walkAnimation.paused) {
+                walkAnimation.paused = false;
+                icon.className = 'fa-solid fa-pause ml-1';
+            } else {
+                walkAnimation.paused = true;
+                icon.className = 'fa-solid fa-play ml-1';
+            }
+        }
+
+        function resetCamera() {
+            if(skinViewer) skinViewer.zoom = 0.9;
+        }
+
+        function copyToClipboard() {
+            const text = "copy csl -> /api/v1/user/{username}.json";
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+        }
+    </script>
 </body>
 </html>
